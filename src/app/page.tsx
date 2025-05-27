@@ -50,7 +50,7 @@ export default function Home() {
         </div>
       </div>
 
-      <footer className="mt-10 text-sm text-gray-500">Made with ❤️ by Bilal</footer>
+      <footer className="mt-10 text-sm text-gray-500">Made With Love By AGREEMATE Team</footer>
     </main>
   );
 }
