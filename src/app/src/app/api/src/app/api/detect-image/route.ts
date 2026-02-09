@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -28,18 +30,10 @@ export async function POST(req: Request) {
 
     const data = await response.json();
 
-    // If Sightengine returns an error
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: "Sightengine error", details: data },
-        { status: 500 }
-      );
-    }
-
     return NextResponse.json(data);
-  } catch (err) {
+  } catch (error) {
     return NextResponse.json(
-      { error: "Server error" },
+      { error: "Detection failed" },
       { status: 500 }
     );
   }
