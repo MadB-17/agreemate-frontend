@@ -9,26 +9,33 @@ export default function Home() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
     if (!file) return;
 
     setLoading(true);
-    setResult("");
+    setResult("Analyzing image… please wait ⏳");
 
-    const formData = new FormData();
-    formData.append("image", file);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
 
-    const res = await fetch("/api/detect-image", {
-      method: "POST",
-      body: formData,
-    });
+      const res = await fetch("/api/detect-image", {
+        method: "POST",
+        body: formData,
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (data?.type?.ai_generated !== undefined) {
-      setResult(`Likely AI-generated: ${data.type.ai_generated}%`);
-    } else {
-      setResult("Could not analyze image.");
+      const probability =
+        data?.type?.ai_generated?.probability;
+
+      if (probability !== undefined) {
+        const percent = Math.round(probability * 100);
+        setResult(`🤖 Likely AI-generated: ${percent}%`);
+      } else {
+        setResult("⚠️ Could not determine if image is AI-generated.");
+      }
+    } catch (err) {
+      setResult("❌ Error analyzing image.");
     }
 
     setLoading(false);
@@ -40,12 +47,16 @@ export default function Home() {
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-xl shadow-md w-full max-w-md text-center"
       >
-        <h1 className="text-2xl font-bold mb-3">AI Image Detector</h1>
+        <h1 className="text-2xl font-bold mb-3">
+          AI Image Detector
+        </h1>
 
         <input
           type="file"
           accept="image/*"
-          onChange={(e) => setFile(e.target.files?.[0] || null)}
+          onChange={(e) =>
+            setFile(e.target.files?.[0] || null)
+          }
           className="mb-4"
         />
 
@@ -54,7 +65,7 @@ export default function Home() {
           disabled={!file || loading}
           className="w-full bg-blue-600 text-white py-2 rounded-lg disabled:opacity-50"
         >
-          {loading ? "Checking..." : "Check Image"}
+          {loading ? "Checking…" : "Check Image"}
         </button>
 
         {result && (
