@@ -3,28 +3,66 @@
 import { useState } from "react";
 
 export default function Home() {
-  const [preview, setPreview] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
     if (!file) return;
-    setPreview(URL.createObjectURL(file));
-  };
+
+    setLoading(true);
+    setResult("");
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const res = await fetch("/api/detect-image", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (data?.type?.ai_generated !== undefined) {
+      setResult(`Likely AI-generated: ${data.type.ai_generated}%`);
+    } else {
+      setResult("Could not analyze image.");
+    }
+
+    setLoading(false);
+  }
 
   return (
-    <main style={{ minHeight: "100vh", padding: 20, textAlign: "center" }}>
-      <h1>Is this real… or AI?</h1>
-      <p>Upload an image to check if it was AI-generated.</p>
+    <main className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-6 rounded-xl shadow-md w-full max-w-md text-center"
+      >
+        <h1 className="text-2xl font-bold mb-3">AI Image Detector</h1>
 
-      <input type="file" accept="image/*" onChange={handleImageUpload} />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+          className="mb-4"
+        />
 
-      {preview && (
-        <div style={{ marginTop: 20 }}>
-          <img src={preview} alt="Preview" style={{ maxWidth: "300px" }} />
-        </div>
-      )}
+        <button
+          type="submit"
+          disabled={!file || loading}
+          className="w-full bg-blue-600 text-white py-2 rounded-lg disabled:opacity-50"
+        >
+          {loading ? "Checking..." : "Check Image"}
+        </button>
 
-      <button style={{ marginTop: 20 }}>Check Image</button>
+        {result && (
+          <p className="mt-4 text-lg font-semibold text-gray-800">
+            {result}
+          </p>
+        )}
+      </form>
     </main>
   );
 }
