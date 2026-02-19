@@ -4,36 +4,36 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const incomingForm = await req.formData();
-    const image = incomingForm.get("image");
+    const formData = await req.formData();
+    const image = formData.get("image");
 
     if (!image) {
       return NextResponse.json(
-        { error: "No image received" },
+        { error: "No image uploaded" },
         { status: 400 }
       );
     }
 
-    const formData = new FormData();
-    formData.append("media", image);
-    formData.append("models", "genai");
-    formData.append("api_user", process.env.SIGHTENGINE_API_USER as string);
-    formData.append("api_secret", process.env.SIGHTENGINE_API_SECRET as string);
+    const seForm = new FormData();
+    seForm.append("media", image as Blob);
+    seForm.append("models", "genai");
+    seForm.append("api_user", process.env.SIGHTENGINE_API_USER!);
+    seForm.append("api_secret", process.env.SIGHTENGINE_API_SECRET!);
 
-    const response = await fetch(
+    const seRes = await fetch(
       "https://api.sightengine.com/1.0/check.json",
       {
         method: "POST",
-        body: formData,
+        body: seForm,
       }
     );
 
-    const data = await response.json();
+    const data = await seRes.json();
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch (err) {
     return NextResponse.json(
-      { error: "Detection failed" },
+      { error: "Image detection failed" },
       { status: 500 }
     );
   }
