@@ -18,7 +18,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append("image", file);
 
-      const res = await fetch("/api/detect-image", {
+      const res = await fetch("https://agreemate.org/api/detect-image", {
         method: "POST",
         body: formData,
       });
